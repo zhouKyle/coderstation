@@ -1,0 +1,16 @@
+.ant-menu {
+  background-color: transparent;
+}
+
+.ant-menu-item {
+  color: #fff !important;
+}
+
+.ant-menu-item-selected {
+  color: rgb(28, 144, 255) !important;
+}
+
+.ant-form-item-label > label {
+  width: 100px;
+  justify-content: flex-end;
+}

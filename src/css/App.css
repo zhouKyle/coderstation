@@ -1,0 +1,23 @@
+.appContainer {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoContainer {
+  background: url("../../public/logo2.png") center center/cover no-repeat;
+  height: 100%;
+  width: 200px;
+}
+
+.navigatorContainer {
+  width: 300px;
+}
+
+.searchBarContainer {
+  width: 32vw;
+}
