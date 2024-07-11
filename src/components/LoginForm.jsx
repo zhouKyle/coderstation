@@ -15,13 +15,20 @@ import { useDispatch } from "react-redux";
 
 import styles from "../css/LoginForm.module.css";
 
-import { getCaptcha, userIsExist, addUser } from "../api/user";
+import {
+  getCaptcha,
+  userIsExist,
+  addUser,
+  loginUser,
+  getUserInfoById,
+} from "../api/user";
 
 const LoginForm = (props) => {
   const [value, setValue] = useState(1);
-  const loginFormRef = useRef();
-  const registerFormRef = useRef();
   const dispatch = useDispatch();
+  const [registerForm] = Form.useForm();
+  const [loginForm] = Form.useForm();
+
   // 登录表单的状态数据
   const [loginInfo, setLoginInfo] = useState({
     loginId: "",
@@ -53,22 +60,38 @@ const LoginForm = (props) => {
     captchaClickHandle(); //修改验证码
   }
 
-  function loginHandle() {}
+  //登录对应的逻辑
+  async function loginHandle() {
+    const result = await loginUser(loginInfo);
+    if (result.data?.data) {
+      //登录成功
+      // 把token存入到localStorage
+      localStorage.setItem("token", result.data.token);
+      if (result.data.data.enabled) {
+        //正常使用，通过返回的 Id 获取 userInfo，存放到状态仓库
+        const { data } = await getUserInfoById(result.data.data._id);
+        console.log("userInfo ====", data);
+        dispatch(initUserInfo(data));
+        dispatch(changeLoginStatus(true));
+        handleCancel();
+        captchaClickHandle();
+        message.success(`登录成功，欢迎${data.nickname}`);
+      } else {
+        //已被冻结
+        message.warning(`登录成功，账号已被冻结，请联系管理员！`);
+        captchaClickHandle();
+      }
+    } else {
+      //登录失败
+      message.error(result.msg || "密码错误，请重新输入");
+      captchaClickHandle();
+    }
+  }
 
   //关闭登录的弹框，清空历史记录
   function handleCancel() {
-    //清空上一次的内容
-    setRegisterInfo({
-      loginId: "",
-      nickName: "",
-      captcha: "",
-    });
-    setLoginInfo({
-      loginId: "",
-      loginPwd: "",
-      captcha: "",
-      remember: false,
-    });
+    //重置表单
+    resethandler();
     props.closeModal(); //关闭弹框
   }
 
@@ -78,11 +101,14 @@ const LoginForm = (props) => {
     if (result.data) {
       message.success("用户注册成功！");
       // 将用户的信息存储到数据仓库里
-      dispatch(initUserInfo(result.data));
+      // dispatch(initUserInfo(result.data));
       // 数据仓库的登录状态 --》 true
-      dispatch(changeLoginStatus(true));
+      // 由于没有获取到token，不进行登录操作，也不保存到状态仓库里。
+      // dispatch(changeLoginStatus(true));
       // 关闭登录的弹框
-      handleCancel();
+      // 弹框跳转到登录页面，重新进行登录操作
+      resethandler();
+      setValue(1);
     } else {
       message.warning(result.msg);
       captchaClickHandle(); // 更新验证码
@@ -116,6 +142,25 @@ const LoginForm = (props) => {
     }
   }
 
+  //重置表单
+  function resethandler() {
+    //清空表单内容
+    setRegisterInfo({
+      loginId: "",
+      nickName: "",
+      captcha: "",
+    });
+    setLoginInfo({
+      loginId: "",
+      loginPwd: "",
+      captcha: "",
+      remember: false,
+    });
+    //重置表单内容
+    loginForm.resetFields();
+    registerForm.resetFields();
+  }
+
   // 登录/注册的表单面板
   let container = null;
   if (value === 1) {
@@ -123,10 +168,10 @@ const LoginForm = (props) => {
     container = (
       <div className={styles.container}>
         <Form
-          name="basic1"
+          name="loginForm"
           autoComplete="off"
           onFinish={loginHandle}
-          ref={loginFormRef}
+          form={loginForm}
         >
           {/* 账号 */}
           <Form.Item
@@ -169,7 +214,7 @@ const LoginForm = (props) => {
           {/* 验证码 */}
           <Form.Item
             label="验证码"
-            name="logincaptcha"
+            name="loginCaptcha"
             rules={[
               {
                 required: true,
@@ -237,7 +282,7 @@ const LoginForm = (props) => {
             >
               登录
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="button" onClick={resethandler}>
               重置
             </Button>
           </Form.Item>
@@ -249,15 +294,15 @@ const LoginForm = (props) => {
     container = (
       <div className={styles.container}>
         <Form
-          name="basic2"
+          name="registerForm"
           autoComplete="off"
-          ref={registerFormRef}
           onFinish={registerHandle}
+          form={registerForm}
         >
           {/* 注册账号 */}
           <Form.Item
-            label="登录账号"
-            name="loginId"
+            label="注册账号"
+            name="registerId"
             rules={[
               {
                 required: true,
@@ -300,7 +345,7 @@ const LoginForm = (props) => {
           {/* 验证码 */}
           <Form.Item
             label="验证码"
-            name="Registercaptcha"
+            name="registerCaptcha"
             rules={[
               {
                 required: true,
@@ -346,7 +391,7 @@ const LoginForm = (props) => {
             >
               注册
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="button" onClick={resethandler}>
               重置
             </Button>
           </Form.Item>
@@ -360,8 +405,8 @@ const LoginForm = (props) => {
       <Modal
         title="注册/登录"
         open={props.isShow}
-        onOk={handleOk}
-        onCancel={props.closeModal}
+        onCancel={handleCancel}
+        footer={null}
       >
         <Radio.Group
           value={value}

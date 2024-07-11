@@ -1,5 +1,7 @@
 import React from "react";
 
-export const Interfaces = () => {
+const Interfaces = () => {
   return <div>Interfaces</div>;
 };
+
+export default Interfaces;

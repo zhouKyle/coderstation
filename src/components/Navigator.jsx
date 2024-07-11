@@ -33,7 +33,7 @@ function Navigator() {
     setCurrent(e.key);
   };
   return (
-    <div className="navigatorContainer">
+    <div className="navContainer">
       <Menu
         className="my-menu"
         onClick={onClick}

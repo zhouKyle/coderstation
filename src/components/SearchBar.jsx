@@ -18,7 +18,7 @@ const options = [
 
 function SearchBar() {
   return (
-    <div className="searchBarContainer">
+    <div className="searchContainer">
       {/* antd的组件组合 */}
       <Space.Compact size="large" block>
         <Select

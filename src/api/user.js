@@ -35,3 +35,50 @@ export function addUser(newUserInfo) {
     method: "POST",
   });
 }
+
+/**
+ * 用户登录
+ * @param {Object} loginInfo
+ * @returns
+ */
+export function loginUser(loginInfo) {
+  return request({
+    url: "/api/user/login",
+    data: loginInfo,
+    method: "POST",
+  });
+}
+
+/**
+ * 根据 loginId 获取 userInfo
+ * @param {string} loginId
+ * @returns
+ */
+export function getUserInfoById(loginId) {
+  return request({
+    url: `/api/user/${loginId}`,
+    method: "GET",
+  });
+}
+
+/**
+ *  恢复登录
+ * @returns
+ */
+export function refreshUser() {
+  return request({
+    url: "/api/user/whoami",
+    method: "GET",
+  });
+}
+
+/**
+ *
+ * @returns 获取积分前十名
+ */
+export function scoreRank() {
+  return request({
+    url: "/api/user/pointsrank",
+    method: "GET",
+  });
+}
